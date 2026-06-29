@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-manager-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: task-manager-api
+  template:
+    metadata:
+      labels:
+        app: task-manager-api
+    spec:
+      containers:
+        - name: task-manager-api
+          image: task-manager-api:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DB_HOST
+              value: postgres
+            - name: DB_NAME
+              value: taskdb
+            - name: DB_USERNAME
+              value: task
+            - name: DB_PASSWORD
+              value: task
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 40
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: task-manager-api
+spec:
+  selector:
+    app: task-manager-api
+  ports:
+    - port: 8080

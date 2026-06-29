@@ -1,0 +1,10 @@
+target/
+.git/
+.gitignore
+.idea/
+.vscode/
+*.iml
+.DS_Store
+*.md
+k8s/
+docker-compose.yml
