@@ -20,7 +20,7 @@ import java.util.UUID;
  * Centralised error handler.
  * <p>
  * Policy: the client only ever sees 400, 404, 409 or 500, each with a generic
- * message and a traceId, never field-level rules, internal messages or stack
+ * message and a traceId, never field-level validation rules, internal messages or stack
  * traces. The full cause is logged server-side against the traceId.
  */
 @Slf4j
@@ -42,31 +42,26 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, RESOURCE_NOT_FOUND, ex);
     }
 
-    // @Valid on a @RequestBody failed.
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex) {
         return build(HttpStatus.BAD_REQUEST, INVALID_REQUEST, ex);
     }
 
-    // Malformed JSON, or an unparseable enum value in the body.
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiError> handleUnreadable(HttpMessageNotReadableException ex) {
         return build(HttpStatus.BAD_REQUEST, INVALID_REQUEST, ex);
     }
 
-    // Wrong type in a path/query param.
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiError> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
         return build(HttpStatus.BAD_REQUEST, INVALID_REQUEST, ex);
     }
 
-    // Optimistic-locking conflict: triggered when the task was modified concurrently
     @ExceptionHandler(OptimisticLockingFailureException.class)
     public ResponseEntity<ApiError> handleConflict(OptimisticLockingFailureException ex) {
         return build(HttpStatus.CONFLICT, RESOURCE_MODIFIED_BY_ANOTHER_REQUEST, ex);
     }
 
-    // Catch-all handler: never leak anything and respond with a 500.
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleUnexpected(Exception ex) {
         return build(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR, ex);
